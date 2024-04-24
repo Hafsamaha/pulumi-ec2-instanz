@@ -4,16 +4,17 @@ import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 
 
-// Create a new VPC
+// new VPC erstellen
 const vpc = new aws.ec2.Vpc("my-vpc", {
     cidrBlock: "10.0.0.0/16",
 });
 
-
+// Internet Gateway erstellen
 const igw = new aws.ec2.InternetGateway("pul-igw", { 
     vpcId: vpc.id 
 });
 
+// Route Table erstellen    
 const routeTable = new aws.ec2.RouteTable("pul-route-table", {
     routes: [
         {
@@ -24,6 +25,7 @@ const routeTable = new aws.ec2.RouteTable("pul-route-table", {
     vpcId: vpc.id,
 });
 
+// Subnet erstellen
 const subnet = new aws.ec2.Subnet("pul-subnet", {
     vpcId: vpc.id,
     cidrBlock: "10.0.1.0/24",
@@ -31,12 +33,14 @@ const subnet = new aws.ec2.Subnet("pul-subnet", {
     availabilityZone: "eu-central-1a",
 });
 
+// Route Table Association erstellen
 new aws.ec2.RouteTableAssociation("rta", {
     routeTableId: routeTable.id,
     subnetId: subnet.id,
 });
 
 
+// Security Group erstellen
 const securityGroup = new aws.ec2.SecurityGroup("pul-sg", {
     vpcId: vpc.id,
     ingress: [
@@ -48,7 +52,7 @@ const securityGroup = new aws.ec2.SecurityGroup("pul-sg", {
     ],
 });
 
-// EC2 instance
+// EC2 Instance erstellen
 const ec2 = new aws.ec2.Instance("pul-ec2", {
     instanceType: "t2.micro",
     vpcSecurityGroupIds: [securityGroup.id], 
@@ -65,6 +69,7 @@ const ec2 = new aws.ec2.Instance("pul-ec2", {
                 docker run -d -p 80:9898 stefanprodan/podinfo`,
 });
 
+// konstanten exportieren
 export const publicIp = ec2.publicIp;
 export const vpcId = vpc.id;
 
